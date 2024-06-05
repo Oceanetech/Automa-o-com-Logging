@@ -1,0 +1,41 @@
+06/05/2024 03:48:49 PM - INFO - ====== WebDriver manager ======
+06/05/2024 03:48:50 PM - INFO - Get LATEST geckodriver version for 126.0 firefox
+06/05/2024 03:48:51 PM - INFO - Get LATEST geckodriver version for 126.0 firefox
+06/05/2024 03:48:51 PM - INFO - Driver [C:\Users\silva\.wdm\drivers\geckodriver\win64\v0.34.0\geckodriver.exe] found in cache
+06/05/2024 03:48:57 PM - INFO - Url acessada com Sucesso
+06/05/2024 03:48:57 PM - INFO - Login Preenchido com sucesso
+06/05/2024 03:48:58 PM - INFO - Senha Preenchido com sucesso
+06/05/2024 03:48:59 PM - INFO - Clicou no Botao Entrar com Sucesso
+06/05/2024 03:48:59 PM - INFO - Clicou em Outros Modulos com Sucesso
+06/05/2024 03:48:59 PM - INFO - Clicou em Colaborador com Sucesso
+06/05/2024 03:49:00 PM - INFO - Clicou em Administrar Servidores com Sucesso
+06/05/2024 03:49:00 PM - INFO - Clicou em Pessoas com Sucesso
+06/05/2024 03:49:01 PM - INFO - Clicou no Botao de Pesquisar com sucesso
+06/05/2024 03:49:02 PM - INFO - Clicou no Botao de Novo com sucesso
+06/05/2024 03:49:02 PM - INFO - Preencheu Nome 'RICARDO AMBROSIO' com sucesso
+06/05/2024 03:49:02 PM - ERROR - ERRO: NOME DA MAE NAO ENCONTRADO NA PLANILHA. mae: nan
+06/05/2024 03:49:06 PM - INFO - Clicou em Outros Modulos com Sucesso
+06/05/2024 03:49:07 PM - INFO - Clicou em Colaborador com Sucesso
+06/05/2024 03:49:07 PM - INFO - Clicou em Administrar Servidores com Sucesso
+06/05/2024 03:49:08 PM - INFO - Clicou em Pessoas com Sucesso
+06/05/2024 03:49:08 PM - INFO - Clicou no Botao de Pesquisar com sucesso
+06/05/2024 03:49:09 PM - INFO - Clicou no Botao de Novo com sucesso
+06/05/2024 03:49:09 PM - ERROR - ERRO: NOME NAO ENCONTRADO NA PLANILHA. Nome: nan
+06/05/2024 03:49:15 PM - INFO - Clicou em Outros Modulos com Sucesso
+06/05/2024 03:49:15 PM - INFO - Clicou em Colaborador com Sucesso
+06/05/2024 03:49:16 PM - INFO - Clicou em Administrar Servidores com Sucesso
+06/05/2024 03:49:16 PM - INFO - Clicou em Pessoas com Sucesso
+06/05/2024 03:49:17 PM - INFO - Clicou no Botao de Pesquisar com sucesso
+06/05/2024 03:49:17 PM - INFO - Clicou no Botao de Novo com sucesso
+06/05/2024 03:49:18 PM - INFO - Preencheu Nome 'RICHARD DOS SANTOS DA SILVA' com sucesso
+06/05/2024 03:49:18 PM - INFO - Preencheu Nome da Mae 'SUELI FRANZI AMBROSIO' com sucesso
+06/05/2024 03:49:18 PM - INFO - Preencheu Sexo 'M' com sucesso
+06/05/2024 03:49:19 PM - INFO - Preencheu data de nascimento '06/01/1979' com sucesso
+06/05/2024 03:49:23 PM - INFO - Preencheu nacionalidade '10' com sucesso
+06/05/2024 03:49:26 PM - INFO - Preencheu naturalidade '9668' com sucesso
+06/05/2024 03:49:27 PM - INFO - Preencheu Grau de Instrucao com sucesso
+06/05/2024 03:49:28 PM - INFO - Preencheu Email 'ricardo.ambrosio@fidi.org.br' com sucesso
+06/05/2024 03:49:28 PM - INFO - Preencheu RG '28.730.571-5' com sucesso
+06/05/2024 03:49:30 PM - INFO - Preencheu Orgao emissor 'ssp' com sucesso
+06/05/2024 03:49:33 PM - INFO - Preencheu UF 'sp' com sucesso
+06/05/2024 03:49:34 PM - INFO - Preencheu CPF '26861689866' com sucesso

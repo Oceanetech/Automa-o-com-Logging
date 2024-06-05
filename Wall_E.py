@@ -1,5 +1,6 @@
 #Bibliotecas Utilizadas 
 import time
+import logging
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
@@ -12,7 +13,10 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
 
+logging.basicConfig(level= logging.INFO, filename="serve.log", format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(level= logging.ERROR, filename="serve.log", format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 #Aqui é onde o Pandas ler o CSV
+
 tabela = pd.read_excel("documento.xlsx")
 tabela = pd.read_excel("documento.xlsx", dtype={'cns': str, 'cpf': str, 'conselho': str, 'matricula': str, 'naturalidade': str, 'nacionalidade': str, 'inicio do vinculo': str, 'inicio': str, 'ano inicio': str, 'ano fim': str, 'cbo': str})
 tabela_values_list = tabela.values.tolist()
@@ -32,12 +36,16 @@ class main():
 
         #Aqui é onde a URL do Ambiente é adicionada
         self.navegador.get("http://172.16.99.238/aghu/pages/casca/casca.xhtml")
+        logging.info('Url acessada com Sucesso')
         #Efetuado login e senha ele entra no sistema 
         self.navegador.find_element('xpath', '//*[@id="usuario:usuario:inputId"]').send_keys(self.email)
+        logging.info('Login Preenchido com sucesso')
         self.navegador.find_element('xpath', '//*[@id="password:inputId"]').send_keys(self.senha)
         time.sleep (1)
+        logging.info('Senha Preenchido com sucesso')
+    
         self.navegador.find_element('xpath', '/html/body/div[1]/div/div/div/div/form/fieldset/div[4]/button/span').click()
-
+        logging.info('Clicou no Botao Entrar com Sucesso')
         return self.navegador
   
     def scroll_to_element(self, element):
@@ -51,6 +59,7 @@ class main():
         mae = lista [1]
         sexo = lista [2]
         data_de_nacimento = lista [3]
+        nacionalidade = lista [4] 
         naturalidade = lista [5]
         email = lista [6]
         rg = lista [7]
@@ -68,15 +77,28 @@ class main():
         ano_inicio = lista [19]
         ano_fim = lista [20]
         perfil = lista [21]
-
-        #Mudar codigo para acessar direto o menu 
+        
+        #Acessar o menu do modulo pessoas
         self.navegador.find_element('xpath', '/html/body/header/div[2]/ul/li[14]/a/span').click()
-        
+        time.sleep(0.3)
+        logging.info('Clicou em Outros Modulos com Sucesso')
+
+        self.navegador.switch_to.default_content()
+
         self.navegador.find_element('xpath', '/html/body/header/div[2]/ul/li[14]/ul/li[3]/a/span').click()
+        logging.info('Clicou em Colaborador com Sucesso')
+        time.sleep(0.3)
+        self.navegador.switch_to.default_content()
+
         self.navegador.find_element('xpath', '/html/body/header/div[2]/ul/li[14]/ul/li[3]/ul/li[1]/a/span').click()
+        logging.info('Clicou em Administrar Servidores com Sucesso')
+        time.sleep(0.3)
+        self.navegador.switch_to.default_content()
+
         self.navegador.find_element('xpath', '/html/body/header/div[2]/ul/li[14]/ul/li[3]/ul/li[1]/ul/li[1]/a/span').click()
-        self.navegador.find_element('xpath', '/html/body/header/div[2]/ul/li[14]/ul/li[3]/ul/li[1]/ul/li[1]/a/span').click()
-        
+        logging.info('Clicou em Pessoas com Sucesso')
+        time.sleep(0.3)
+        self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
 
 
@@ -86,11 +108,12 @@ class main():
         #Clica dentro do elemento pesquisa
         elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/form[3]/div/button[1]/span[2]')))
         elemento_dentro_do_iframe.click()
-
+        logging.info('Clicou no Botao de Pesquisar com sucesso')
         #Após interagir com o iframe, você pode voltar ao contexto padrão
         self.navegador.switch_to.default_content()
-        #--------------------------------------------------------------------------------------------------------------------------
         
+        #--------------------------------------------------------------------------------------------------------------------------
+
         #Clicar no botão Novo
         iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
 
@@ -98,105 +121,223 @@ class main():
         #Clica dentro do elemento novo
         elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/form[3]/div/span/button/span[2]')))
         elemento_dentro_do_iframe.click()
-
+        logging.info('Clicou no Botao de Novo com sucesso')
         #Após interagir com o iframe, você pode voltar ao contexto padrão
         self.navegador.switch_to.default_content()
+
+
+        #--------------------------------------------------------------------------------------------------------------------------
+    
+
+        try:
+            # Verifica se o nome é válido (não nulo e não NaN)
+            if not nome or str(nome).lower() == 'nan':
+                logging.error(f"ERRO: NOME NAO ENCONTRADO NA PLANILHA. Nome: {nome}")
+                time.sleep(5)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+
+            # Clicar no elemento Nome, e preenche o nome puxando da planilha
+           
+            
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            
+            self.navegador.switch_to.frame(iframe)
+
+            # Encontra o elemento dentro do Frame
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="nomePessoa:nomePessoa:inputId"]')))
+            elemento_dentro_do_iframe.click()
+            elemento_dentro_do_iframe.send_keys(nome)
+
+            logging.info(f"Preencheu Nome '{nome}' com sucesso")
+            self.navegador.switch_to.default_content()
+
+            # Após interagir com o iframe, você pode voltar ao contexto padrão
+
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER NOME '{nome}': {str(e)}")
+
+            self.navegador.refresh()
+            time.sleep(3)
+
+            self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
         
-        #Clicar no elemento Nome, e preenche o nome puxando da planilha
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not mae or str(mae).lower() == 'nan':
+                logging.error(f"ERRO: NOME DA MAE NAO ENCONTRADO NA PLANILHA. mae: {mae}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+                
+            #Clicar no elemento Mãe, e preenche puxando da planilha
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
 
-        self.navegador.switch_to.frame(iframe)
-        #Encontra o elemento dentro do Frame
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="nomePessoa:nomePessoa:inputId"]')))
-        elemento_dentro_do_iframe.click()
-        iframe.send_keys(nome)
+            self.navegador.switch_to.frame(iframe)
+            #Encontra o elemento dentro do Frame
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="nomeMae:nomeMae:inputId"]')))
+            elemento_dentro_do_iframe.click()
+            iframe.send_keys(mae)
+
+            logging.info(f"Preencheu Nome da Mae '{mae}' com sucesso")
+            self.navegador.switch_to.default_content()
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER NOME DA'{mae}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+            #-----------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not sexo or str(sexo).lower() == 'nan':
+                logging.error(f"ERRO: SEXO NAO ENCONTRADO NA PLANILHA. mae: {mae}")
+                time.sleep(3)
+                self.navegador.refresh()
+
+                return
+            #Encontra o elemento dentro do iframe
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+
+            #Clica direto no elemento e preenche puxando da planilha
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="sexo:sexo:inputId_label"]')))
+            elemento_dentro_do_iframe.click()
+
+            #Após preencher o sexo ele clicar na tecla ENTER
+            iframe.send_keys(sexo)
+            iframe.send_keys(Keys.ENTER)
+            logging.info(f"Preencheu Sexo '{sexo}' com sucesso")
+            
+            self.navegador.switch_to.default_content()
+
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER SEXO'{sexo}': {str(e)}")
+            time.sleep(3)
+            self.navegador.refresh()
+            self.navegador.switch_to.default_content()
         #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not data_de_nacimento or str(data_de_nacimento).lower() == 'nan':
+                logging.error(f"ERRO: DATA DE NASCIMENTO NAO ENCONTRADA NA PLANILHA. data_de_nacimento: {data_de_nacimento}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
 
-        #Clicar no elemento Mãe, e preenche puxando da planilha
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            #Encontra o elemento dentro do iframe
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
 
-        self.navegador.switch_to.frame(iframe)
-        #Encontra o elemento dentro do Frame
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="nomeMae:nomeMae:inputId"]')))
-        elemento_dentro_do_iframe.click()
-        iframe.send_keys(mae)
-        
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
-        #--------------------------------------------------------------------------------------------------------------------------
-        
-        #Encontra o elemento dentro do iframe
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
+            #Encontra o elemento dentro do Iframe e preenche a Data de Nacimento
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="dataNascimento:dataNascimento:inputId_input"]')))
+            elemento_dentro_do_iframe.click()
+            elemento_dentro_do_iframe.send_keys(str(data_de_nacimento))
+            logging.info(f"Preencheu data de nascimento '{data_de_nacimento}' com sucesso")
 
-        #Clica direto no elemento e preenche puxando da planilha
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="sexo:sexo:inputId_label"]')))
-        elemento_dentro_do_iframe.click()
+            self.navegador.switch_to.default_content()
 
-        #Após preencher o sexo ele clicar na tecla ENTER
-        iframe.send_keys(sexo)
-        iframe.send_keys(Keys.ENTER)
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{data_de_nacimento}': {str(e)}")
+            time.sleep(3)
 
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
-        #--------------------------------------------------------------------------------------------------------------------------
-        
-        #Encontra o elemento dentro do iframe
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
 
-        #Encontra o elemento dentro do Iframe e preenche a Data de Nacimento
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="dataNascimento:dataNascimento:inputId_input"]')))
-        elemento_dentro_do_iframe.click()
-        elemento_dentro_do_iframe.send_keys(str(data_de_nacimento))
-
-        # Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
         
-        #Encontra o elemento de Nacionalidade
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not nacionalidade or str(nacionalidade).lower() == 'nan':
+                logging.error(f"ERRO: NACIONALIDADE NAO ENCONTRADO NA PLANILHA. nacionalidade: {nacionalidade}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+            
+            # Localiza o iframe
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            
+            # Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+            time.sleep(1)
+            
+            # Clica no elemento e preenche o valor 10, Código BRASILEIRO
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="suggestionNacionalidade:suggestionNacionalidade:suggestion_input"]')))
+            elemento_dentro_do_iframe.click()
+            time.sleep(1)
+            # Preenche o valor TEXTO
+            elemento_dentro_do_iframe.send_keys(str(nacionalidade))
+            time.sleep(1)
+            
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[18]/table/tbody/tr/td[1]')))
+            elemento_dentro_do_iframe.click()
+            
+            logging.info(f"Preencheu nacionalidade '{nacionalidade}' com sucesso")
 
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-        time.sleep(1)
-        #Clicar no elemento e Preenche o Valor 10, Codigo BRASILEIRO 
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="suggestionNacionalidade:suggestionNacionalidade:suggestion_input"]')))
-        elemento_dentro_do_iframe.click()
-        #Preenche o valor TEXTO
-        iframe.send_keys("10")
-        time.sleep
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[18]/table/tbody/tr/td[1]')))
-        elemento_dentro_do_iframe.click()
+            self.navegador.switch_to.default_content()
 
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
+
+            # Após interagir com o iframe, volta ao contexto padrão
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{nacionalidade}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not naturalidade or str(naturalidade).lower() == 'nan':
+                logging.error(f"ERRO: NATURALIDADE NAO ENCONTRADO NA PLANILHA. naturalidade: {naturalidade}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                return
+            #Encontra o iframe da naturalidade
         
-        #Encontra o iframe da naturalidade
-        
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-        time.sleep(1)
-        #Usando WebdriverWait espera 10 seg para o elemento aparecer
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="naturalidade:naturalidade:suggestion_input"]')))
-        elemento_dentro_do_iframe.click()
-        
-        #Preenche a Naturalidade puxando da planilha
-        elemento_dentro_do_iframe.send_keys(str(naturalidade))
-        time.sleep(1)
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[57]/table/tbody/tr/td[2]')))
-        elemento_dentro_do_iframe.click()
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+            time.sleep(1)
+            #Usando WebdriverWait espera 10 seg para o elemento aparecer
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="naturalidade:naturalidade:suggestion_input"]')))
+            elemento_dentro_do_iframe.click()
+            
+            #Preenche a Naturalidade puxando da planilha
+            elemento_dentro_do_iframe.send_keys(str(naturalidade))
 
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
+            time.sleep(1)
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[57]/table/tbody/tr/td[2]')))
+            elemento_dentro_do_iframe.click()
+
+            logging.info(f"Preencheu naturalidade '{naturalidade}' com sucesso")
+            self.navegador.switch_to.default_content()
+
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{naturalidade}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+       
         #--------------------------------------------------------------------------------------------------------------------------
         
         #Espera o elemento do iframe carregar
@@ -211,96 +352,189 @@ class main():
         time.sleep(1)
         elemento_li = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[18]/div/ul/li[13]")))
         elemento_li.click()
+        logging.info('Preencheu Grau de Instrucao com sucesso')
 
         #Após interagir com o iframe, você pode voltar ao contexto padrão
         self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not email or str(email).lower() == 'nan':
+                logging.error(f"ERRO: EMAIL NAO ENCONTRADO NA PLANILHA. email: {email}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+            #Espera o elemento do iframe carregar
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
 
-        #Espera o elemento do iframe carregar
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            # Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
 
-        # Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
+            #Clicar no elemento, e preencher o Email do colaborador puxando da planilha
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="email:email:inputId"]')))
+            elemento_dentro_do_iframe.click()
+            elemento_dentro_do_iframe.send_keys(str(email))
+            logging.info(f"Preencheu Email '{email}' com sucesso")
+            self.navegador.switch_to.default_content()
+            # Após interagir com o iframe, você pode voltar ao contexto padrão
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{email}': {str(e)}")
+            time.sleep(3)
 
-        #Clicar no elemento, e preencher o Email do colaborador puxando da planilha
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="email:email:inputId"]')))
-        elemento_dentro_do_iframe.click()
-        elemento_dentro_do_iframe.send_keys(str(email))
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
 
-        # Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not rg or str(rg).lower() == 'nan':
+                logging.error(f"ERRO: NOME DA MAE NAO ENCONTRADO NA PLANILHA. rg: {rg}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+            #Espera o elemento do iframe carregar
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
 
-        #Espera o elemento do iframe carregar
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
 
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-
-        #Clicar no elemento e preencher o RG do Colaborador
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="rg:rg:inputId"]')))
-        elemento_dentro_do_iframe.click()
-        iframe.send_keys(rg)
+            #Clicar no elemento e preencher o RG do Colaborador
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="rg:rg:inputId"]')))
+            elemento_dentro_do_iframe.click()
+            iframe.send_keys(rg)
+            logging.info(f"Preencheu RG '{rg}' com sucesso")
+            self.navegador.switch_to.default_content()
 
         #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{rg}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not orgao_emissor or str(orgao_emissor).lower() == 'nan':
+                logging.error(f"ERRO: NOME DA MAE NAO ENCONTRADO NA PLANILHA. orgao_emissor: {orgao_emissor}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
+
+            #Espera o elemento do iframe carregar
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]'))) 
+            
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+
+            #Clicar no elemento dentro do Iframe, e preencher o Orgão Emissor do colaborador
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="orgao:orgao:suggestion_input"]')))
+            elemento_dentro_do_iframe.click()
+            iframe.send_keys(orgao_emissor)
+
+            #Aparecendo o preenchimento ele clicar no valor retornado
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[59]/table/tbody/tr/td')))
+            elemento_dentro_do_iframe.click()
+            
+            logging.info(f"Preencheu Orgao emissor '{orgao_emissor}' com sucesso")
+            self.navegador.switch_to.default_content()
+            
+            #Após interagir com o iframe, você pode voltar ao contexto padrão
+            self.navegador.switch_to.default_content()
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{orgao_emissor}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
     
-        #Espera o elemento do iframe carregar
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]'))) 
-        
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-
-        #Clicar no elemento dentro do Iframe, e preencher o Orgão Emissor do colaborador
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="orgao:orgao:suggestion_input"]')))
-        elemento_dentro_do_iframe.click()
-        iframe.send_keys(orgao_emissor)
-        
-        #Aparecendo o preenchimento ele clicar no valor retornado
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[59]/table/tbody/tr/td')))
-        elemento_dentro_do_iframe.click()
-        
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not uf or str(uf).lower() == 'nan':
+                logging.error(f"ERRO: UF NAO ENCONTRADO NA PLANILHA. uf: {uf}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
         #--------------------------------------------------------------------------------------------------------------------------
 
-        #Espera o elemento do iframe carregar
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        time.sleep(1)
-        # Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-        
-        #Clicar no elemento, e preencher o UF do Colaborador puxando da planilha
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ufRgPessoa:ufRgPessoa:suggestion_input"]')))
-        elemento_dentro_do_iframe.click()
-        iframe.send_keys(uf)
-        
-        #Elemento <li>
-        elemento_li = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "tr.ui-autocomplete-item:nth-child(1) > td:nth-child(1)")))
-        #Clica no elemento <li>
-        elemento_li.click()
+            #Espera o elemento do iframe carregar
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            time.sleep(1)
+            # Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+            
+            #Clicar no elemento, e preencher o UF do Colaborador puxando da planilha
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ufRgPessoa:ufRgPessoa:suggestion_input"]')))
+            elemento_dentro_do_iframe.click()
+            iframe.send_keys(uf)
+            #Elemento <li>
+            elemento_li = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "tr.ui-autocomplete-item:nth-child(1) > td:nth-child(1)")))
+            #Clica no elemento <li>
+            elemento_li.click()
+            logging.info(f"Preencheu UF '{uf}' com sucesso")
+            
+            self.navegador.switch_to.default_content()
+            
 
-        #Após interagir com o iframe, você pode voltar ao contexto padrão
-        self.navegador.switch_to.default_content()
+            #Após interagir com o iframe, você pode voltar ao contexto padrão
+            self.navegador.switch_to.default_content()
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{uf}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+    
         #--------------------------------------------------------------------------------------------------------------------------
+        try:
+             # Verifica se o mae é válido (não nulo e não NaN)
+            if not cpf or str(cpf).lower() == 'nan':
+                logging.error(f"ERRO: CPF NAO ENCONTRADO NA PLANILHA. cpf: {cpf}")
+                time.sleep(3)
+                self.navegador.refresh()
+                
+                # Faz o refresh se o nome não é válido
+                return
 
-        #Espera o elemento do iframe carregar
-        iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        
-        #Muda para o iframe
-        self.navegador.switch_to.frame(iframe)
-        
-        #Clica no elemento, e preenche o CPF do colaborador
-        elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cpf:cpf:inputId"]')))
-        elemento_dentro_do_iframe.click()    
-        elemento_dentro_do_iframe.send_keys(str(cpf))             
-        elemento_dentro_do_iframe.click()
+            #Espera o elemento do iframe carregar
+            iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
+            
+            #Muda para o iframe
+            self.navegador.switch_to.frame(iframe)
+            
+            #Clica no elemento, e preenche o CPF do colaborador
+            elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cpf:cpf:inputId"]')))
+            elemento_dentro_do_iframe.click()    
+            elemento_dentro_do_iframe.send_keys(str(cpf))             
+            elemento_dentro_do_iframe.click()
+            logging.info(f"Preencheu CPF '{cpf}' com sucesso")
+            self.navegador.switch_to.default_content()
 
-        #Após interagir com o iframe, você pode voltar ao contexto padrão      
-        self.navegador.switch_to.default_content()
+        except Exception as e:
+            logging.error(f"ERRO AO PREENCHER '{cpf}': {str(e)}")
+            time.sleep(3)
+
+            self.navegador.refresh()
+            time.sleep(3)
+            self.navegador.switch_to.defaut_content()
+
         #--------------------------------------------------------------------------------------------------------------------------
+        
         #Espera o elemento do iframe carregar
+        
         iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
     
         #Muda para o iframe
@@ -632,24 +866,7 @@ class main():
         elemento_dentro_do_iframe.send_keys(str(cns))
         elemento_dentro_do_iframe.click()
         self.navegador.switch_to.default_content()
-        #--------------------------------------------------------------------------------------------------------------------------]
-        # # Espera pelo seletor do iframe
-        # iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
-        # print('1')
-
-        # # Muda para o iframe
-        # self.navegador.switch_to.frame(iframe)
-        # print('2')
-        # time.sleep(1)
-        # # Agora você pode interagir com os elementos dentro do iframe
-        # # Por exemplo, clicar em um botão dentro do iframe
-        # # Supondo que você esteja tentando clicar em um elemento dentro do iframe
-        # elemento_dentro_do_iframe = WebDriverWait(self.navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/form[3]/div/button[1]/span[2]')))
-        # print('3')
-        # elemento_dentro_do_iframe.click()
-        # print('4')
-
-        # self.navegador.switch_to.default_content() 
+       
         #--------------------------------------------------------------------------------------------------------------------------
         # Espera pelo seletor do iframe
         iframe = WebDriverWait(self.navegador, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="i_frame_pessoas"]')))
@@ -987,15 +1204,15 @@ class main():
         
         self.navegador.switch_to.default_content()
 
-        time.sleep(5)
-
-        self.navegador.refresh()
-        time.sleep(5)
-
         try:
-            self.navegador.find_element('xpath', '//*[@id="usuario:usuario:inputId"]')
-            self.login(self.email, self.senha)
-        except:
+            self.navegador.find_element('xpath', '//*[@id="usuario:usuario:inputId"]').send_keys(self.email)
+            logging.info('Login Preenchido com sucesso')
+            self.navegador.find_element('xpath', '//*[@id="password:inputId"]').send_keys(self.senha)
+            time.sleep (1)
+            logging.info('Senha Preenchido com sucesso')
+            self.navegador.find_element('xpath', '/html/body/div[1]/div/div/div/div/form/fieldset/div[4]/button/span').click()
+            logging.info('Clicou no Botao Entrar com Sucesso')
+        except Exception as e:
             pass
 
     def executa_cadastro(self):
